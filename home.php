@@ -29,15 +29,17 @@
 		
 		$article_order = array();
 		
-		// get recent 3 articles
-		$sql = 'select spu_id, unix_timestamp(timestamp) as time from spu_versions where version = 1 order by timestamp desc limit ' . $recentk;
+		// get recentk articles
+		$sql = 'select spu_id, unix_timestamp(timestamp) as time from spu_versions where version = 1 order by time desc limit ' . $recentk;
 		$result = mysqli_query($cid, $sql);
 		if(!$result) {return json_encode(array('error_msg' => 'Error reading versions table!'));}
 		$spus = array();
+		$latest = 1;
 		while($row = mysqli_fetch_assoc($result)) {
 			$spu_id = $row['spu_id'];
 			$timestamp = $row['time'];
-			$spus[$spu_id] = array('id' => $spu_id, 'timestamp' => Timesince($timestamp));
+			$spus[$spu_id] = array('id' => $spu_id, 'timestamp' => Timesince($timestamp), 'rank' => $latest);
+			$latest++;
 			array_push($article_order, $spu_id);
 		}
 		mysqli_free_result($result);
@@ -117,14 +119,16 @@
 		$article_order = array();
 		
 		// get recent likes
-		$sql = 'select spu_id, max(unix_timestamp(timestamp)) as time from likes where author_id = \'' . $current_author_id . '\' group by spu_id order by timestamp desc limit ' . $recentk;
+		$sql = 'select spu_id, max(unix_timestamp(timestamp)) as time from likes where author_id = \'' . $current_author_id . '\' group by spu_id order by time desc limit ' . $recentk;
 		$result = mysqli_query($cid, $sql);
 		if(!$result) {return json_encode(array('error_msg' => 'Error reading like table!'));}
 		$spus = array();
+		$latest = 1;
 		while($row = mysqli_fetch_assoc($result)) {
 			$spu_id = $row['spu_id'];
 			$timestamp = $row['time'];
-			$spus[$spu_id] = array('id' => $spu_id, 'timestamp' => Timesince($timestamp));
+			$spus[$spu_id] = array('id' => $spu_id, 'timestamp' => Timesince($timestamp), 'rank' => $latest);
+			$latest++;
 			array_push($article_order, $spu_id);
 		}
 		mysqli_free_result($result);
@@ -193,14 +197,16 @@
 		mysqli_set_charset($cid, 'utf8');
 		
 		// get recent comments
-		$sql = 'select spu_id, max(unix_timestamp(timestamp)) as time from comments where author_id = \'' . $current_author_id . '\' group by spu_id order by timestamp desc limit ' . $recentk;
+		$sql = 'select spu_id, max(unix_timestamp(timestamp)) as time from comments where author_id = \'' . $current_author_id . '\' group by spu_id order by time desc limit ' . $recentk;
 		$result = mysqli_query($cid, $sql);
 		if(!$result) {return json_encode(array('error_msg' => 'Error reading like table!'));}
 		$spus = array();
+		$latest = 1;
 		while($row = mysqli_fetch_assoc($result)) {
 			$spu_id = $row['spu_id'];
 			$timestamp = $row['time'];
-			$spus[$spu_id] = array('id' => $spu_id, 'timestamp' => Timesince($timestamp));
+			$spus[$spu_id] = array('id' => $spu_id, 'timestamp' => Timesince($timestamp), 'rank' => $latest);
+			$latest++;
 			array_push($article_order, $spu_id);
 		}
 		mysqli_free_result($result);
@@ -297,7 +303,9 @@ $(function() {
 
 	var content = '';
 	if(spus_div.length > 0) {
-		content += '<h4>Recently uploaded articles</h4>' + spus_div;
+		var location = document.location.href;
+		location = location.substring(0, location.lastIndexOf('\\') + 1);
+		content += '<h4><a href=\'' + location + 'recent_articles.php\' title=\'Click for more\' style=\'color:#000\'>Recently uploaded articles</a></h4>' + spus_div;
 	}
 	if(likes_div.length > 0) {
 		content += '<h4>Recently liked articles</h4>' + likes_div;
@@ -314,6 +322,15 @@ $(function() {
 });	
 
 function format_articles(type, arr) {
+	var sortarr = new Array();
+	for(var id in arr) sortarr.push(arr[id]);
+	sortarr.sort(function(a, b) {
+		var rank_a = a['rank'];
+		var rank_b = b['rank'];
+		return rank_a - rank_b;
+	});
+	arr = sortarr;
+	
 	var content = '';
 	for(var i in arr) {
 		var obj = arr[i];

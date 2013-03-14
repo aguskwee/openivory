@@ -24,7 +24,7 @@
 		mysqli_set_charset($cid, 'utf8');
 		
 		// get recent 3 articles
-		$sql = 'select spu_id, unix_timestamp(timestamp) as time from spu_versions where version = 1 order by timestamp desc limit ' . $recentk;
+		$sql = 'select spu_id, unix_timestamp(timestamp) as time from spu_versions where version = 1 order by time desc limit ' . $recentk;
 		$result = mysqli_query($cid, $sql);
 		if(!$result) {return json_encode(array('error_msg' => 'Error reading versions table!'));}
 		$spus = array();
@@ -101,7 +101,7 @@
 		mysqli_set_charset($cid, 'utf8');
 		
 		// get recent likes
-		$sql = 'select spu_id, max(unix_timestamp(timestamp)) as time from likes group by spu_id order by timestamp desc limit ' . $recentk;
+		$sql = 'select spu_id, max(unix_timestamp(timestamp)) as time from likes group by spu_id order by time desc limit ' . $recentk;
 		$result = mysqli_query($cid, $sql);
 		if(!$result) {return json_encode(array('error_msg' => 'Error reading like table!'));}
 		$spus = array();
@@ -167,7 +167,7 @@
 		mysqli_set_charset($cid, 'utf8');
 		
 		// get recent comments
-		$sql = 'select spu_id, max(unix_timestamp(timestamp)) as time from comments group by spu_id order by timestamp desc limit ' . $recentk;
+		$sql = 'select spu_id, max(unix_timestamp(timestamp)) as time from comments group by spu_id order by time desc limit ' . $recentk;
 		$result = mysqli_query($cid, $sql);
 		if(!$result) {return json_encode(array('error_msg' => 'Error reading like table!'));}
 		$spus = array();
