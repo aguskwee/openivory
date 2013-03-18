@@ -10,6 +10,9 @@
 	if(isset($_COOKIE['author_id'])) $current_author_id = $_COOKIE['author_id']; 
 	if(!isset($current_author_id)) $current_author_id = '';
 	
+	// if no logon user, go to index.php
+	if($current_author_id == '') header('index.php');
+	
 	$recentk = 5;
 	
 	// get the recently added articles
@@ -107,7 +110,7 @@
 		global $recentk;
 		global $current_author_id;
 
-		if($current_author_id == '') return array();
+		if($current_author_id == '') return json_encode(array());
 		
 		// connect to database
 		$cid = mysqli_connect($dbhost, $dbusername, $dbpassword, $dbname);
@@ -185,7 +188,7 @@
 		global $recentk;
 		global $current_author_id;
 
-		if($current_author_id == '') return array();
+		if($current_author_id == '') return json_encode(array());
 		
 		$article_order = array();
 		
